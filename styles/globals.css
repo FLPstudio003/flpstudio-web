@@ -2,13 +2,27 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  font-family: 'Inter', sans-serif;
+html,
+body,
+#__next {
   background-image: url('/images/bg_n.png');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
+  background-color: #000;
   background-attachment: fixed;
+  min-height: 100vh;
+  height: 100%;
+}
+
+/* 🌐 Pre mobily — iný obrázok */
+@media (max-width: 768px) {
+  html,
+  body,
+  #__next {
+    background-image: url('/images/bg_n_m.png');
+    background-attachment: scroll !important;
+  }
 }
 
 
