@@ -2,25 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
-html,
-body,
-#__next {
+body {
+  font-family: 'Inter', sans-serif;
   background-image: url('/images/bg_n.png');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  background-color: #000;
   background-attachment: fixed;
-  min-height: 100vh;
-  height: 100%;
 }
 
-/* Fix pre iOS / mobily – niektoré ignorujú fixed pozadie */
-@media (max-width: 768px) {
-  html,
-  body,
-  #__next {
-    background-attachment: scroll !important;
-  }
-}
 
