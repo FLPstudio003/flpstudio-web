@@ -4,12 +4,16 @@
 
 html,
 body {
-  height: 100%;
-  font-family: 'Inter', sans-serif;
   background-image: url('/images/bg_n.png');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  background-attachment: fixed;
-  background-color: #000; /* fallback – ak by sa obrázok nenačítal */
+  background-color: #000;
+  background-attachment: fixed; /* default pre desktop */
+}
+
+@media (max-width: 768px) {
+  body {
+    background-attachment: scroll; /* prepne len pre mobily */
+  }
 }
