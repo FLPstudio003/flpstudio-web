@@ -2,11 +2,14 @@
 @tailwind components;
 @tailwind utilities;
 
+html,
 body {
+  height: 100%;
   font-family: 'Inter', sans-serif;
   background-image: url('/images/bg_n.png');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
   background-attachment: fixed;
+  background-color: #000; /* fallback – ak by sa obrázok nenačítal */
 }
