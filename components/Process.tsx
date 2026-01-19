@@ -23,7 +23,7 @@ export default function Process() {
           </ul>
 
           <a
-            href="#form"
+            href="/cenova-ponuka"
             className="inline-block bg-red-600 hover:bg-red-700 text-white font-semibold px-6 py-3 rounded-full shadow-lg transition"
           >
             Zistiť, čo vieme spraviť pre tvoju značku
