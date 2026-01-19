@@ -1,0 +1,42 @@
+import type { NextApiRequest, NextApiResponse } from "next";
+import nodemailer from "nodemailer";
+
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  if (req.method !== "POST") {
+    return res.status(405).json({ message: "Method not allowed" });
+  }
+
+  const { name, email, message } = req.body;
+
+  if (!name || !email || !message) {
+    return res.status(400).json({ message: "Missing fields" });
+  }
+
+  const transporter = nodemailer.createTransport({
+    host: "mail.websupport.sk",
+    port: 465,
+    secure: true,
+    auth: {
+      user: "info@flpstudio.sk",
+      pass: process.env.MAIL_PASSWORD,
+    },
+  });
+
+  try {
+    await transporter.sendMail({
+      from: `"FLPstudio Web" <info@flpstudio.sk>`,
+      to: "info@flpstudio.sk",
+      subject: "Nová správa z formulára",
+      html: `
+        <p><strong>Meno:</strong> ${name}</p>
+        <p><strong>Email:</strong> ${email}</p>
+        <p><strong>Správa:</strong><br>${message}</p>
+      `,
+    });
+
+    return res.status(200).json({ message: "Email odoslaný" });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Chyba pri odosielaní emailu." });
+  }
+}
