@@ -3,12 +3,12 @@ export default function Background() {
     <div
       className="
         fixed inset-0 -z-50
-        bg-black
         bg-[url('/images/bg_n.png')]
-        bg-cover
-        bg-center
-        bg-no-repeat
+        bg-cover bg-center bg-no-repeat
+        w-screen h-screen
       "
+      aria-hidden="true"
     />
   );
 }
+
