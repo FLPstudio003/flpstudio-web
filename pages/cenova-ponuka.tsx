@@ -36,7 +36,7 @@ export default function CenovaPonuka() {
     const fullMessage = `${selectedService ? `Typ služby: ${selectedService}\n\n` : ""}${formData.message}`;
 
     try {
-      const response = await fetch("/api/contact", {
+      const response = await fetch("/api/contact.ts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
