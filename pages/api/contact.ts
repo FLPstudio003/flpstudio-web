@@ -13,19 +13,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   const transporter = nodemailer.createTransport({
-    host: "mail.websupport.sk",
-    port: 465,
+    host: process.env.SMTP_HOST,
+    port: Number(process.env.SMTP_PORT),
     secure: true,
     auth: {
-      user: "info@flpstudio.sk",
-      pass: process.env.MAIL_PASSWORD,
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASS,
     },
   });
 
   try {
     await transporter.sendMail({
-      from: `"FLPstudio Web" <info@flpstudio.sk>`,
-      to: "info@flpstudio.sk",
+      from: `"FLPstudio Web" <${process.env.SMTP_USER}>`,
+      to: process.env.MAIL_TO,
       subject: "Nová správa z formulára",
       html: `
         <p><strong>Meno:</strong> ${name}</p>
