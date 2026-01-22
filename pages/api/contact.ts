@@ -24,7 +24,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     await transporter.sendMail({
-      from: `"FLPstudio Web" <${process.env.SMTP_USER}>`,
+      from: `"FLPstudio Web" <info@flpstudio.sk>`, // ← pevný a platný email
       to: process.env.MAIL_TO,
       subject: "Nová správa z formulára",
       html: `
@@ -36,7 +36,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     return res.status(200).json({ message: "Email odoslaný" });
   } catch (error) {
-    console.error(error);
+    console.error("Email send error:", error); // ← lepšie logovanie
     return res.status(500).json({ message: "Chyba pri odosielaní emailu." });
   }
 }
