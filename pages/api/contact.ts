@@ -24,7 +24,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     await transporter.sendMail({
-      from: `"FLPstudio Web" <info@flpstudio.sk>`, // ← pevný a platný email
+      from: `"FLPstudio Web" <${process.env.SMTP_USER}>`, // ← pevný a platný email
       to: process.env.MAIL_TO,
       subject: "Nová správa z formulára",
       html: `
