@@ -8,12 +8,10 @@ import ScrollToTop from "@/components/ScrollToTop";
 export default function CenovaPonuka() {
   const [selectedService, setSelectedService] = useState<string | null>(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [message, setMessage] = useState("");
-  const [isSending, setIsSending] = useState(false);
-  const [success, setSuccess] = useState(false);
-  const [error, setError] = useState("");
+  const [formData, setFormData] = useState({ name: "", email: "", message: "" });
+  const [successMessage, setSuccessMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const services = [
     "Grafický dizajn",
@@ -24,40 +22,42 @@ export default function CenovaPonuka() {
     "Iné"
   ];
 
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSending(true);
-    setError("");
-    setSuccess(false);
+
+    setLoading(true);
+    setSuccessMessage("");
+    setErrorMessage("");
+
+    const fullMessage = `${selectedService ? `Typ služby: ${selectedService}\n\n` : ""}${formData.message}`;
 
     try {
-      const res = await fetch("/api/contact", {
+      const response = await fetch("/api/contact", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name,
-          email,
-          message: `Služba: ${selectedService || "Nezadané"}\n\nSpráva: ${message}`
-        })
+          name: formData.name,
+          email: formData.email,
+          message: fullMessage,
+        }),
       });
 
-      if (res.ok) {
-        setSuccess(true);
-        setName("");
-        setEmail("");
-        setMessage("");
+      if (response.ok) {
+        setSuccessMessage("Požiadavka bola úspešne odoslaná ✅");
+        setFormData({ name: "", email: "", message: "" });
         setSelectedService(null);
       } else {
-        const data = await res.json();
-        setError(data.message || "Chyba pri odosielaní");
+        setErrorMessage("Nastala chyba pri odosielaní.");
       }
     } catch (err) {
-      setError("Nastala chyba pri odosielaní.");
+      setErrorMessage("Chyba spojenia so serverom.");
+    } finally {
+      setLoading(false);
     }
-
-    setIsSending(false);
   };
 
   return (
@@ -78,34 +78,33 @@ export default function CenovaPonuka() {
           Vyber si typ služby a napíš nám detaily svojho projektu. Ozveme sa čo najskôr s ponukou na mieru.
         </p>
 
-        <form className="w-full max-w-xl space-y-4" onSubmit={handleSubmit}>
-          {/* Meno */}
+        <form onSubmit={handleSubmit} className="w-full max-w-xl space-y-4">
           <div>
             <label className="block text-sm mb-1">Meno a priezvisko</label>
             <input
               type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
               className="w-full bg-transparent border border-red-600 rounded-md px-4 py-2 placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-red-500"
               placeholder="Tvoje meno"
               required
             />
           </div>
 
-          {/* Email */}
           <div>
             <label className="block text-sm mb-1">Email</label>
             <input
               type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
               className="w-full bg-transparent border border-red-600 rounded-md px-4 py-2 placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-red-500"
               placeholder="napr. tvoj@email.com"
               required
             />
           </div>
 
-          {/* Custom dropdown */}
           <div className="relative">
             <label className="block text-sm mb-1">Vyber službu</label>
             <div
@@ -137,33 +136,29 @@ export default function CenovaPonuka() {
             )}
           </div>
 
-          {/* Správa */}
           <div>
             <label className="block text-sm mb-1">Správa</label>
             <textarea
+              name="message"
+              value={formData.message}
+              onChange={handleChange}
               rows={4}
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
               className="w-full bg-transparent border border-red-600 rounded-md px-4 py-2 placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-red-500"
               placeholder="Napíš podrobnosti k tomu, čo konkrétne potrebuješ"
               required
             />
           </div>
 
+          {successMessage && <p className="text-green-500 text-sm">{successMessage}</p>}
+          {errorMessage && <p className="text-red-500 text-sm">{errorMessage}</p>}
+
           <button
             type="submit"
-            disabled={isSending}
             className="bg-white text-red-600 font-semibold px-6 py-3 rounded-full hover:bg-white/90 transition block mx-auto mt-4"
+            disabled={loading}
           >
-            {isSending ? "Odosielam..." : "Odoslať požiadavku"}
+            {loading ? "Odosielam..." : "Odoslať požiadavku"}
           </button>
-
-          {success && (
-            <p className="text-green-500 text-center mt-4">Správa bola úspešne odoslaná.</p>
-          )}
-          {error && (
-            <p className="text-red-500 text-center mt-4">{error}</p>
-          )}
         </form>
       </main>
 
@@ -172,3 +167,4 @@ export default function CenovaPonuka() {
     </>
   );
 }
+
