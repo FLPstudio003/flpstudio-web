@@ -1,52 +1,38 @@
-import type { NextApiRequest, NextApiResponse } from "next";
-import nodemailer from "nodemailer";
+import { Resend } from 'resend';
+import type { NextApiRequest, NextApiResponse } from 'next';
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
-  if (req.method !== "POST") {
-    return res.status(405).json({ message: "Method not allowed" });
+const resend = new Resend(process.env.RESEND_API_KEY);
+
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ message: 'Method not allowed' });
   }
 
-  const { name, email, message } = req.body;
+  const { name, email, message, service } = req.body;
 
-  if (!name || !email || !message) {
-    return res.status(400).json({ message: "Missing fields" });
+  if (!name || !email || !message || !service) {
+    return res.status(400).json({ message: 'Missing fields' });
   }
 
   try {
-    const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: 587,
-      secure: false, // 465 = TRUE
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-      },
-    });
-
-    // 🔥 DÔLEŽITÉ – overenie SMTP pripojenia
-    await transporter.verify();
-
-    await transporter.sendMail({
-      from: `"FLPstudio Web" <${process.env.SMTP_USER}>`,
-      to: process.env.MAIL_TO,
-      subject: "Nová správa z formulára",
+    const data = await resend.emails.send({
+      from: 'info@flpstudio.sk',
+      to: 'info@flpstudio.sk',
+      reply_to: email,
+      subject: 'Nová cenová ponuka z FLPstudio.sk',
       html: `
+        <h2>Nová žiadosť o cenovú ponuku</h2>
         <p><strong>Meno:</strong> ${name}</p>
         <p><strong>Email:</strong> ${email}</p>
+        <p><strong>Služba:</strong> ${service}</p>
         <p><strong>Správa:</strong><br>${message}</p>
-      `,
+      `
     });
 
-    return res.status(200).json({ message: "Email odoslaný" });
-  } catch (error: any) {
-    console.error("❌ EMAIL ERROR:", error);
-
-    return res.status(500).json({
-      message: "Chyba pri odosielaní emailu",
-      error: error?.message || "Unknown error",
-    });
+    return res.status(200).json({ success: true, data });
+  } catch (error) {
+    console.error('Email send error:', error);
+    return res.status(500).json({ message: 'Chyba pri odosielaní emailu' });
   }
 }
+
