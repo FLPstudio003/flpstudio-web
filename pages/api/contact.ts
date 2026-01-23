@@ -16,9 +16,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     const data = await resend.emails.send({
-      from: 'info@flpstudio.sk',
-      to: 'info@flpstudio.sk',
-      reply_to: email,
+      from: 'FLPstudio <info@flpstudio.sk>',          // MUSÍ byť overený doménový email cez Resend
+      to: 'info@flpstudio.sk',                         // Sem ti to príde
+      reply_to: email,                                 // Aby si vedel zákazníkovi odpísať
       subject: 'Nová cenová ponuka z FLPstudio.sk',
       html: `
         <h2>Nová žiadosť o cenovú ponuku</h2>
@@ -26,13 +26,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         <p><strong>Email:</strong> ${email}</p>
         <p><strong>Služba:</strong> ${service}</p>
         <p><strong>Správa:</strong><br>${message}</p>
-      `
+      `,
     });
 
     return res.status(200).json({ success: true, data });
   } catch (error) {
-    console.error('Email send error:', error);
-    return res.status(500).json({ message: 'Chyba pri odosielaní emailu' });
+    console.error("RESEND ERROR:", error);
+    return res.status(500).json({ message: "Chyba pri odosielaní emailu" });
   }
 }
-
