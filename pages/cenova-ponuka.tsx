@@ -1,46 +1,170 @@
-import type { NextApiRequest, NextApiResponse } from "next";
-import { Resend } from "resend";
+import Head from "next/head";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
+import { useState } from "react";
+import { ChevronDown, Check } from "lucide-react";
+import ScrollToTop from "@/components/ScrollToTop";
 
-const resend = new Resend(process.env.RESEND_API_KEY!);
+export default function CenovaPonuka() {
+  const [selectedService, setSelectedService] = useState<string | null>(null);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [formData, setFormData] = useState({ name: "", email: "", message: "" });
+  const [successMessage, setSuccessMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [loading, setLoading] = useState(false);
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
-  if (req.method !== "POST") {
-    return res.status(405).json({ message: "Method not allowed" });
-  }
+  const services = [
+    "Grafický dizajn",
+    "Tvorba webstránok",
+    "Správa sociálnych sietí",
+    "Video produkcia",
+    "Fotografické služby",
+    "Iné"
+  ];
 
-  const { name, email, message, service } = req.body;
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
 
-  // DEBUG LOG – kľúčové
-  console.log("API CONTACT BODY:", req.body);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
 
-  if (!name || !email || !message || !service) {
-    return res.status(400).json({
-      message: "Missing fields",
-      received: req.body,
-    });
-  }
+    setLoading(true);
+    setSuccessMessage("");
+    setErrorMessage("");
 
-  try {
-    await resend.emails.send({
-      from: "FLPstudio <info@flpstudio.sk>",
-      to: ["info@flpstudio.sk"],
-      replyTo: email, // ⬅️ POZOR: replyTo (nie reply_to)
-      subject: "Nová cenová ponuka – FLPstudio.sk",
-      html: `
-        <h2>Nová žiadosť o cenovú ponuku</h2>
-        <p><strong>Meno:</strong> ${name}</p>
-        <p><strong>Email:</strong> ${email}</p>
-        <p><strong>Služba:</strong> ${service}</p>
-        <p><strong>Správa:</strong><br/>${message}</p>
-      `,
-    });
+    const fullMessage = `${selectedService ? `Typ služby: ${selectedService}\n\n` : ""}${formData.message}`;
 
-    return res.status(200).json({ success: true });
-  } catch (error) {
-    console.error("RESEND ERROR:", error);
-    return res.status(500).json({ message: "Chyba pri odosielaní emailu" });
-  }
+    try {
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          message: fullMessage,
+          service: selectedService,
+        }),
+      });
+
+      if (response.ok) {
+        setSuccessMessage("Požiadavka bola úspešne odoslaná ✅");
+        setFormData({ name: "", email: "", message: "" });
+        setSelectedService(null);
+      } else {
+        setErrorMessage("Nastala chyba pri odosielaní.");
+      }
+    } catch (err) {
+      setErrorMessage("Chyba spojenia so serverom.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <>
+      <Head>
+        <title>FLPstudio.sk | Cenová ponuka</title>
+        <meta name="description" content="Požiadaj o nezáväznú cenovú ponuku na mieru." />
+      </Head>
+
+      <Header />
+
+      <main className="flex flex-col items-center justify-center text-white px-6 py-20 max-w-[900px] mx-auto">
+        <h1 className="text-3xl sm:text-4xl font-bold mb-4 text-center">
+          Získaj <span className="text-red-600">cenovú ponuku</span>
+        </h1>
+
+        <p className="text-center text-white/80 mb-10 max-w-[600px]">
+          Vyber si typ služby a napíš nám detaily svojho projektu. Ozveme sa čo najskôr s ponukou na mieru.
+        </p>
+
+        <form onSubmit={handleSubmit} className="w-full max-w-xl space-y-4">
+          <div>
+            <label className="block text-sm mb-1">Meno a priezvisko</label>
+            <input
+              type="text"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              className="w-full bg-transparent border border-red-600 rounded-md px-4 py-2 placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-red-500"
+              placeholder="Tvoje meno"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm mb-1">Email</label>
+            <input
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              className="w-full bg-transparent border border-red-600 rounded-md px-4 py-2 placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-red-500"
+              placeholder="napr. tvoj@email.com"
+              required
+            />
+          </div>
+
+          <div className="relative">
+            <label className="block text-sm mb-1">Vyber službu</label>
+            <div
+              className="w-full bg-black border border-red-600 rounded-md px-4 py-2 flex justify-between items-center cursor-pointer hover:bg-neutral-900 transition"
+              onClick={() => setDropdownOpen(!dropdownOpen)}
+            >
+              <span className="text-white/90">
+                {selectedService || "-- Vyber službu --"}
+              </span>
+              <ChevronDown className="w-5 h-5 text-white/70" />
+            </div>
+
+            {dropdownOpen && (
+              <div className="absolute z-50 mt-2 w-full bg-neutral-900 border border-red-600 rounded-md shadow-xl">
+                {services.map((service) => (
+                  <div
+                    key={service}
+                    className="px-4 py-2 hover:bg-red-600 hover:text-white text-sm flex items-center justify-between cursor-pointer transition"
+                    onClick={() => {
+                      setSelectedService(service);
+                      setDropdownOpen(false);
+                    }}
+                  >
+                    <span>{service}</span>
+                    {selectedService === service && <Check className="w-4 h-4" />}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div>
+            <label className="block text-sm mb-1">Správa</label>
+            <textarea
+              name="message"
+              value={formData.message}
+              onChange={handleChange}
+              rows={4}
+              className="w-full bg-transparent border border-red-600 rounded-md px-4 py-2 placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-red-500"
+              placeholder="Napíš podrobnosti k tomu, čo konkrétne potrebuješ"
+              required
+            />
+          </div>
+
+          {successMessage && <p className="text-green-500 text-sm">{successMessage}</p>}
+          {errorMessage && <p className="text-red-500 text-sm">{errorMessage}</p>}
+
+          <button
+            type="submit"
+            className="bg-white text-red-600 font-semibold px-6 py-3 rounded-full hover:bg-white/90 transition block mx-auto mt-4"
+            disabled={loading}
+          >
+            {loading ? "Odosielam..." : "Odoslať požiadavku"}
+          </button>
+        </form>
+      </main>
+
+      <ScrollToTop />
+      <Footer />
+    </>
+  );
 }
