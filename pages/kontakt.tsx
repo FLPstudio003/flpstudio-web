@@ -28,7 +28,7 @@ export default function KontaktPage() {
           name: formData.name,
           email: formData.email,
           message: formData.message,
-          service: "Kontakt – všeobecná správa", // Musí byť poslané, lebo backend ho vyžaduje
+          service: "Kontakt – správa", // Dôležité – povinné pole
         }),
       });
 
@@ -117,6 +117,7 @@ export default function KontaktPage() {
             />
           </div>
 
+          {/* ✅ Výpis výsledku odoslania */}
           {successMessage && <p className="text-green-500 text-sm">{successMessage}</p>}
           {errorMessage && <p className="text-red-500 text-sm">{errorMessage}</p>}
 
