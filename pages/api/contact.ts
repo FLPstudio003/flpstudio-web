@@ -21,7 +21,7 @@ export default async function handler(
     await resend.emails.send({
       from: "FLPstudio <info@flpstudio.sk>",
       to: ["info@flpstudio.sk"],
-      reply_to: email,
+      replyTo: email, // <-- OPRAVENÉ TU!
       subject: "Nová cenová ponuka – FLPstudio.sk",
       html: `
         <h2>Nová žiadosť o cenovú ponuku</h2>
