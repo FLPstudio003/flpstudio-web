@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = new Resend(process.env.RESEND_API_KEY!);
 
 export default async function handler(
   req: NextApiRequest,
@@ -13,15 +13,21 @@ export default async function handler(
 
   const { name, email, message, service } = req.body;
 
+  // DEBUG LOG – kľúčové
+  console.log("API CONTACT BODY:", req.body);
+
   if (!name || !email || !message || !service) {
-    return res.status(400).json({ message: "Missing fields" });
+    return res.status(400).json({
+      message: "Missing fields",
+      received: req.body,
+    });
   }
 
   try {
     await resend.emails.send({
       from: "FLPstudio <info@flpstudio.sk>",
       to: ["info@flpstudio.sk"],
-      replyTo: email, // <-- OPRAVENÉ TU!
+      replyTo: email, // ⬅️ POZOR: replyTo (nie reply_to)
       subject: "Nová cenová ponuka – FLPstudio.sk",
       html: `
         <h2>Nová žiadosť o cenovú ponuku</h2>
